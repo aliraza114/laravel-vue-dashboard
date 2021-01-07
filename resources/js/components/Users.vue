@@ -187,24 +187,30 @@ data() {
     }),
     };
 },
-methods: {
-    loadUsers() {
-    axios.get("api/user").then(({ data }) => (this.users = data));
+    methods: {
+        loadUsers() {
+        axios.get("api/user").then(({ data }) => (this.users = data));
+        },
+        createUser() {
+        this.$Progress.start();
+        this.form.post("api/user");
+        Fire.$emit('AfterCreate');
+        // hide model here
+        toast({
+            type: 'success',
+            message: 'User Creted Successfully'
+        })
+        this.$Progress.finish();
+        },
     },
-    createUser() {
-    this.$Progress.start();
-    this.form.post("api/user");
-
-    // hide model here
-    toast({
-        type: 'success',
-        message: 'User Creted Successfully'
-    })
-    this.$Progress.finish();
+    mounted() {
+        this.loadUsers();
     },
-},
-mounted() {
-    this.loadUsers();
-},
+    created() {
+        this.loadUsers()
+        Fire.$on('AfterCreate', () => {
+            this.loadUsers();
+        })
+    }
 };
 </script>
