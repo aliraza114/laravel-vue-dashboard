@@ -176,18 +176,31 @@
 export default {
 data() {
     return {
+        editmode: false,
         users: {},
         form: new Form({
-        name: "",
-        email: "",
-        password: "",
-        type: "",
-        bio: "",
-        photo: "",
+            id: "",
+            name: "",
+            email: "",
+            password: "",
+            type: "",
+            bio: "",
+            photo: "",
         }),
     };
 },
 methods: {
+    editModal(user){
+        this.editmode = true;
+        this.form.reset();
+        $('#addNew').modal('show');
+        this.form.fill(user);
+    },
+    newModal(){
+        this.editmode = false
+        this.form.reset();
+        $('#addNew').modal('show')
+    },
     deleteUser(id){
         Swal.fire({
         title: 'Are you sure?',
@@ -221,13 +234,31 @@ methods: {
     loadUsers() {
         axios.get("api/user").then(({ data }) => (this.users = data));
     },
+    updateUser() {
+        this.$$Progress.start()
+        this.form.put('api/user/'+ this.form.id)
+        .then(()=>{
+            Fire.$emit("AfterCreate");
+            $('#addNew').modal('hide');
+            Swal.fire(
+                'Updated!',
+                'User is Updated.',
+                'success'
+            )
+            this.$Progress.finish();
+            Fire.$emit("AfterCreate");
+        })
+        .catch(()=>{
+            this.$$Progress.fail()
+        })
+    },
     createUser() {
         this.$Progress.start();
         this.form
         .post("api/user")
         .then(() => {
             Fire.$emit("AfterCreate");
-            // hide model here
+            $('#addNew').modal('hide');
             toast({
             type: "success",
             message: "User Creted Successfully",
